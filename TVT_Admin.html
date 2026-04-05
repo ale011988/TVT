@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TVT — Panel de Administración</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --celeste:#29ABE2;--celeste-dark:#1a8bbf;--celeste-light:#e8f6fd;
+  --verde:#27ae60;--amarillo:#f39c12;--rojo:#e74c3c;
+  --gris-fondo:#f0f2f5;--gris-borde:#dde3ea;--gris-texto:#555;
+  --gris-oscuro:#2c3e50;--blanco:#fff;--sombra:0 2px 10px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;background:var(--gris-fondo);color:var(--gris-oscuro);font-size:14px;}
+
+/* LOGIN */
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a3a5c,#29ABE2);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.login-box{background:white;border-radius:14px;padding:40px 36px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;animation:popIn .3s ease;}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.login-logo{margin-bottom:16px;}
+.login-logo img{max-height:52px;}
+.login-titulo{font-size:1rem;font-weight:800;color:#1a3a5c;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.login-sub{font-size:0.72rem;color:#888;margin-bottom:20px;}
+.login-badge{display:inline-block;background:#fef9e7;color:#b7950b;font-size:0.7rem;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:20px;text-transform:uppercase;letter-spacing:0.5px;}
+.f-group{margin-bottom:14px;text-align:left;}
+.f-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#555;margin-bottom:5px;display:block;}
+.f-input{width:100%;padding:10px 13px;border:1.5px solid #e0e0e0;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s;}
+.f-input:focus{border-color:var(--celeste);}
+.f-input.error{border-color:var(--rojo);}
+.login-btn{width:100%;padding:12px;background:var(--celeste);color:white;border:none;border-radius:30px;font-family:'Montserrat',sans-serif;font-size:.85rem;font-weight:700;text-transform:uppercase;cursor:pointer;transition:background .2s;margin-top:8px;}
+.login-btn:hover{background:var(--celeste-dark);}
+.login-error{color:var(--rojo);font-size:.75rem;margin-top:10px;font-weight:600;display:none;}
+
+/* TOPBAR */
+.topbar{background:var(--gris-oscuro);color:white;padding:8px 24px;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;}
+.topbar-title{font-weight:700;letter-spacing:.5px;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.topbar-right a{color:#aaa;text-decoration:none;font-size:.75rem;transition:color .2s;}
+.topbar-right a:hover{color:white;}
+.logout-btn{background:#e74c3c;border:none;color:white;padding:4px 12px;border-radius:20px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;text-transform:uppercase;transition:background .2s;}
+.logout-btn:hover{background:#c0392b;}
+
+/* HEADER ADMIN */
+.admin-header{background:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--gris-borde);box-shadow:var(--sombra);}
+.admin-logo{display:flex;align-items:center;gap:12px;}
+.admin-logo img{max-height:46px;}
+.admin-logo-txt h1{font-size:.95rem;font-weight:800;text-transform:uppercase;color:var(--gris-oscuro);}
+.admin-logo-txt span{font-size:.65rem;color:var(--celeste);font-weight:700;text-transform:uppercase;letter-spacing:2px;}
+.admin-badge{background:var(--celeste-light);color:var(--celeste-dark);font-size:.72rem;font-weight:700;padding:5px 14px;border-radius:20px;border:1px solid var(--celeste);letter-spacing:.5px;}
+
+/* CONTAINER */
+.container{max-width:1100px;margin:auto;padding:24px 18px 40px;}
+
+/* SAVE BAR */
+.save-bar{background:white;border:1px solid var(--gris-borde);border-radius:8px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:var(--sombra);}
+.save-status{font-size:.78rem;color:#888;font-weight:500;}
+.save-status.ok{color:var(--verde);}
+.save-status.error{color:var(--rojo);}
+.save-btn{padding:9px 22px;border-radius:30px;font-size:.78rem;font-weight:700;text-transform:uppercase;cursor:pointer;border:none;font-family:'Montserrat',sans-serif;transition:all .2s;}
+.save-btn-primary{background:var(--celeste);color:white;}
+.save-btn-primary:hover{background:var(--celeste-dark);}
+.save-btn-sec{background:var(--gris-fondo);color:var(--gris-texto);border:1px solid var(--gris-borde);}
+.save-btn-sec:hover{background:var(--gris-borde);}
+
+/* INSTRUCCIONES */
+.instrucciones{background:#fffbea;border:1px solid #f0d060;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:.78rem;color:#7d6000;line-height:1.7;}
+.instrucciones strong{font-weight:700;}
+.instrucciones code{background:#fef3c7;padding:1px 6px;border-radius:3px;font-family:monospace;font-size:.82rem;}
+
+/* SECTION */
+.section-title{font-size:.7rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--celeste);margin:26px 0 10px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gris-borde);}
+.section-title .art{font-size:.62rem;color:#aaa;font-weight:500;font-style:italic;letter-spacing:.5px;text-transform:none;}
+
+/* CARD */
+.card{background:white;border-radius:8px;box-shadow:var(--sombra);border:1px solid var(--gris-borde);padding:20px;margin-bottom:14px;}
+.card-header{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--gris-texto);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--celeste-light);}
+
+/* FORM ELEMENTS */
+.f-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.f-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.f-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.f-full{grid-column:1/-1;}
+.f-group{display:flex;flex-direction:column;gap:5px;}
+.f-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gris-texto);}
+.f-input,.f-select,.f-textarea{font-family:'Montserrat',sans-serif;font-size:.85rem;padding:9px 12px;border:1.5px solid var(--gris-borde);border-radius:6px;background:#fafafa;color:var(--gris-oscuro);outline:none;transition:border-color .2s,background .2s;width:100%;}
+.f-input:focus,.f-select:focus,.f-textarea:focus{border-color:var(--celeste);background:white;}
+.f-textarea{resize:vertical;min-height:70px;}
+
+/* DYNAMIC ROWS */
+.rows-container{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+.dyn-row{display:grid;gap:8px;align-items:center;background:#fafafa;border:1px solid var(--gris-borde);border-radius:6px;padding:10px;}
+.dyn-row.trabajos{grid-template-columns:1fr 2fr 1fr 1fr auto;}
+.dyn-row.gastos{grid-template-columns:2fr 1fr auto;}
+.dyn-row.plan{grid-template-columns:1fr 3fr auto;}
+.dyn-row.flota{grid-template-columns:2fr 1fr 2fr 1fr 1fr auto;}
+.dyn-row.inventario{grid-template-columns:2fr 1fr 1fr auto;}
+.dyn-row.zonas{grid-template-columns:1fr 1fr 1fr auto;}
+.dyn-row.reclamos{grid-template-columns:1fr 1fr 2fr 3fr 1fr auto;}
+.add-btn{background:var(--verde-light,#e8f8ef);color:var(--verde);border:1.5px solid var(--verde);border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:700;text-transform:uppercase;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.add-btn:hover{background:var(--verde);color:white;}
+.del-btn{background:#fdecea;color:var(--rojo);border:1px solid #f5c6cb;border-radius:5px;padding:6px 10px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .2s;flex-shrink:0;}
+.del-btn:hover{background:var(--rojo);color:white;}
+
+/* LINK CONFIG */
+.link-config{background:var(--celeste-light);border:1px solid var(--celeste);border-radius:6px;padding:10px 14px;font-size:.75rem;color:var(--celeste-dark);}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .f-grid-2,.f-grid-3,.f-grid-4{grid-template-columns:1fr;}
+  .dyn-row.trabajos,.dyn-row.gastos,.dyn-row.plan,.dyn-row.flota,.dyn-row.inventario,.dyn-row.zonas,.dyn-row.reclamos{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="logo_tejedor.png" alt="Carlos Tejedor"
+           onerror="this.style.display='none'">
+    </div>
+    <div class="login-titulo">Panel de Administración</div>
+    <div class="login-sub">Tejedor Vial Transparente — TVT</div>
+    <div class="login-badge">⚙ Acceso Restringido — Solo Personal Autorizado</div>
+    <div class="f-group">
+      <label class="f-label" for="lu">Usuario</label>
+      <input class="f-input" type="text" id="lu" placeholder="Ingrese usuario" autocomplete="off">
+    </div>
+    <div class="f-group" style="margin-bottom:14px;">
+      <label class="f-label" for="lp">Clave</label>
+      <input class="f-input" type="password" id="lp" placeholder="Ingrese clave">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar al Panel</button>
+    <div class="login-error" id="loginError">Usuario o clave incorrectos.</div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="topbar-title">⚙ TVT — Panel de Administración</span>
+  <div class="topbar-right">
+    <a href="TVT_Web.html" target="_blank">👁 Ver web pública</a>
+    <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="admin-header">
+  <div class="admin-logo">
+    <img src="logo_tejedor.png" alt="Carlos Tejedor"
+         onerror="this.style.display='none';document.getElementById('logoFb').style.display='flex'">
+    <div id="logoFb" style="display:none;align-items:center;gap:8px;">
+      <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="18" stroke="#29ABE2" stroke-width="3"/><circle cx="20" cy="20" r="10" stroke="#29ABE2" stroke-width="2"/><circle cx="20" cy="20" r="4" fill="#E8A020"/></svg>
+    </div>
+    <div class="admin-logo-txt"><h1>Carlos Tejedor</h1><span>Municipalidad</span></div>
+  </div>
+  <div class="admin-badge">Panel de Carga de Datos — TVT</div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="container">
+
+  <!-- INSTRUCCIONES -->
+  <div class="instrucciones">
+    <strong>📋 Instrucciones de uso:</strong> Completá los datos en cada sección y presioná <strong>"Guardar en Google Sheets"</strong> al final de cada sección. Los cambios se reflejarán automáticamente en la web pública <code>TVT_Web.html</code> en la próxima actualización.<br>
+    Para que funcione la sincronización: (1) Creá el Google Sheet con las pestañas indicadas, (2) publicalo como CSV en <em>Archivo → Compartir → Publicar en la web</em>, (3) pegá el ID del Sheet en <code>TVT_Web.html</code> donde dice <code>TU_SHEET_ID_AQUI</code>.
+  </div>
+
+  <!-- SAVE BAR -->
+  <div class="save-bar">
+    <span class="save-status" id="saveStatus">⬡ Sin cambios pendientes</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="save-btn save-btn-sec" onclick="exportarJSON()">📥 Exportar JSON</button>
+      <button class="save-btn save-btn-primary" onclick="abrirSheet()">📂 Abrir Google Sheet</button>
+    </div>
+  </div>
+
+  <!-- ── CONFIGURACIÓN GENERAL ── -->
+  <div class="section-title">Configuración General <span class="art">Links y datos del sistema</span></div>
+  <div class="card">
+    <div class="card-header">Links y Configuración</div>
+    <div class="f-grid-2">
+      <div class="f-group">
+        <label class="f-label">ID Google Sheet</label>
+        <input class="f-input" id="cfgSheetId" placeholder="Ej: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Link Informe Anual</label>
+        <input class="f-input" id="cfgInforme" placeholder="URL del informe anual" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Link Formulario de Reclamos (Google Form)</label>
+        <input class="f-input" id="cfgReclamo" placeholder="https://docs.google.com/forms/d/e/..." oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Fecha actualización flota</label>
+        <input class="f-input" type="date" id="cfgFechaFlota" oninput="marcarCambio()">
+      </div>
+    </div>
+    <div class="link-config" style="margin-top:12px;">
+      💡 El formulario de reclamos debe ser un <strong>Google Form</strong> con los campos: Nombre y Apellido o Razón Social, DNI o CUIT, Lugar, Reclamo. Los reclamos enviados llegarán al Google Sheet pestaña <strong>Reclamos</strong>.
+    </div>
+  </div>
+
+  <!-- ── RESUMEN ECONÓMICO ── -->
+  <div class="section-title">Resumen Económico <span class="art">Art. 3° inc. a) — Actualización mensual</span></div>
+  <div class="card">
+    <div class="card-header">Datos del Período — Pestaña "Resumen" en Google Sheets</div>
+    <div class="f-grid-4">
+      <div class="f-group">
+        <label class="f-label">Período</label>
+        <input class="f-input" id="resPeriodo" placeholder="Ej: Marzo 2026" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Monto Recaudado</label>
+        <input class="f-input" id="resRecaudado" placeholder="Ej: $120 M" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Monto Ejecutado</label>
+        <input class="f-input" id="resEjecutado" placeholder="Ej: $95 M" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">% Ejecución</label>
+        <input class="f-input" id="resEjecucion" placeholder="Ej: 79%" oninput="marcarCambio()">
+      </div>
+      <div class="f-group f-full">
+        <label class="f-label">Km Intervenidos en el Período</label>
+        <input class="f-input" id="resKm" placeholder="Ej: 48 km" oninput="marcarCambio()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TRABAJOS REALIZADOS ── -->
+  <div class="section-title">Trabajos Realizados <span class="art">Art. 3° inc. b) — Pestaña "Trabajos"</span></div>
+  <div class="card">
+    <div class="card-header">Listado de intervenciones del período</div>
+    <div style="display:grid;grid-template-columns:1fr 2fr 1fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 10px;">
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Tipo</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Ubicación</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Fecha</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Km</span>
+      <span></span>
+    </div>
+    <div class="rows-container" id="trabajosRows"></div>
+    <button class="add-btn" onclick="addRow('trabajos')">+ Agregar trabajo</button>
+  </div>
+
+  <!-- ── DISTRIBUCIÓN DE GASTOS ── -->
+  <div class="section-title">Distribución de Gastos <span class="art">Art. 3° inc. a) — Pestaña "Gastos"</span></div>
+  <div class="card">
+    <div class="card-header">Rubros de gasto (el porcentaje debe sumar 100%)</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 10px;">
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Rubro</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">% Porcentaje</span>
+      <span></span>
+    </div>
+    <div class="rows-container" id="gastosRows"></div>
+    <button class="add-btn" onclick="addRow('gastos')">+ Agregar rubro</button>
+  </div>
+
+  <!-- ── PLAN DE TRABAJO ── -->
+  <div class="section-title">Plan de Trabajo Próximo Período <span class="art">Art. 3° inc. b) — Pestaña "Plan"</span></div>
+  <div class="card">
+    <div class="card-header">Trabajos previstos para el período siguiente</div>
+    <div style="display:grid;grid-template-columns:1fr 3fr auto;gap:6px;margin-bottom:6px;padding:0 10px;">
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Estado</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Descripción</span>
+      <span></span>
+    </div>
+    <div class="rows-container" id="planRows"></div>
+    <button class="add-btn" onclick="addRow('plan')">+ Agregar tarea</button>
+  </div>
+
+  <!-- ── FLOTA VIAL ── -->
+  <div class="section-title">Flota Vial <span class="art">Arts. 6° y 7° — Pestaña "Flota"</span></div>
+  <div class="card">
+    <div class="card-header">Estado semaforizado de cada unidad</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 10px;">
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Unidad</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Origen</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Organismo</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Hs Uso</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Estado</span>
+      <span></span>
+    </div>
+    <div class="rows-container" id="flotaRows"></div>
+    <button class="add-btn" onclick="addRow('flota')">+ Agregar unidad</button>
+  </div>
+
+  <!-- ── INVENTARIO ── -->
+  <div class="section-title">Inventario Vial <span class="art">Art. 5° — Pestaña "Inventario"</span></div>
+  <div class="card">
+    <div class="card-header">Datos generales de la red vial rural</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 10px;">
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Indicador</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Valor</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">En elaboración</span>
+      <span></span>
+    </div>
+    <div class="rows-container" id="inventarioRows"></div>
+    <button class="add-btn" onclick="addRow('inventario')">+ Agregar dato</button>
+  </div>
+
+  <!-- ── ZONAS ── -->
+  <div class="section-title">Intervenciones por Zona <span class="art">Pestaña "Zonas"</span></div>
+  <div class="card">
+    <div class="card-header">Kilómetros intervenidos por cuartel/zona (para el gráfico de barras)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 10px;">
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Zona / Cuartel</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Km Total</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Km Mapillary</span>
+      <span></span>
+    </div>
+    <div class="rows-container" id="zonasRows"></div>
+    <button class="add-btn" onclick="addRow('zonas')">+ Agregar zona</button>
+  </div>
+
+  <!-- ── INDICADORES ── -->
+  <div class="section-title">Indicadores de Gestión <span class="art">Art. 8° — Pestaña "Indicadores" — Trimestral</span></div>
+  <div class="card">
+    <div class="card-header">Indicadores del trimestre</div>
+    <div class="f-grid-3">
+      <div class="f-group">
+        <label class="f-label">Período</label>
+        <input class="f-input" id="indPeriodo" placeholder="Ej: 1° Trimestre 2026" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Costo Promedio por Km</label>
+        <input class="f-input" id="indCostoKm" placeholder="Ej: $1.979.167" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">% Ejecución sobre Tasa</label>
+        <input class="f-input" id="indEjecucion" placeholder="Ej: 79%" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">% Disponibilidad Flota Municipal</label>
+        <input class="f-input" id="indDisponib" placeholder="Ej: 60%" oninput="marcarCambio()">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Km Intervenidos en el Período</label>
+        <input class="f-input" id="indKmTotal" placeholder="Ej: 48 km" oninput="marcarCambio()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RECLAMOS ── -->
+  <div class="section-title">Gestión de Reclamos <span class="art">Art. 9° — Pestaña "Reclamos"</span></div>
+  <div class="card">
+    <div class="card-header">Seguimiento de reclamos ciudadanos</div>
+    <div class="link-config" style="margin-bottom:12px;">
+      💡 Los reclamos se cargan por los ciudadanos a través del <strong>Google Form</strong> vinculado. Acá solo podés actualizar el <strong>estado</strong> de cada reclamo.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 2fr 3fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 10px;">
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Ticket</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Fecha</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Lugar</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Reclamo</span>
+      <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;">Estado</span>
+      <span></span>
+    </div>
+    <div class="rows-container" id="reclamosRows"></div>
+    <button class="add-btn" onclick="addRow('reclamos')">+ Agregar reclamo manual</button>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ══ CREDENCIALES
+const CREDS = { usuario:'Tejedor', clave:'Vial' };
+let SHEET_ID = '';
+let haycambios = false;
+
+// ══ LOGIN
+function doLogin(){
+  const u=document.getElementById('lu').value.trim();
+  const p=document.getElementById('lp').value.trim();
+  const err=document.getElementById('loginError');
+  if(u===CREDS.usuario && p===CREDS.clave){
+    document.getElementById('loginOverlay').style.display='none';
+    cargarDatosGuardados();
+  } else {
+    err.style.display='block';
+    document.getElementById('lu').classList.add('error');
+    document.getElementById('lp').classList.add('error');
+    setTimeout(()=>{document.getElementById('lu').classList.remove('error');document.getElementById('lp').classList.remove('error');},1500);
+  }
+}
+function doLogout(){ location.reload(); }
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('lu').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ══ ESTADO CAMBIOS
+function marcarCambio(){
+  hayambios=true;
+  const s=document.getElementById('saveStatus');
+  s.textContent='⚠ Hay cambios sin sincronizar en Google Sheets';
+  s.className='save-status error';
+}
+function marcarGuardado(){
+  hayambios=false;
+  const s=document.getElementById('saveStatus');
+  s.textContent='✓ Datos guardados localmente — Copiá al Google Sheet manualmente';
+  s.className='save-status ok';
+}
+
+// ══ ROW TEMPLATES
+const templates = {
+  trabajos: ()=>`<div class="dyn-row trabajos">
+    <input class="f-input" placeholder="Tipo (Ej: Mantenimiento)" oninput="marcarCambio()">
+    <input class="f-input" placeholder="Ubicación (Ej: Cuartel II — Acceso Sur)" oninput="marcarCambio()">
+    <input class="f-input" placeholder="Fecha (Ej: 12/03/2026)" oninput="marcarCambio()">
+    <input class="f-input" placeholder="Km (Ej: 8 km)" oninput="marcarCambio()">
+    <button class="del-btn" onclick="delRow(this)">✕</button>
+  </div>`,
+  gastos: ()=>`<div class="dyn-row gastos">
+    <input class="f-input" placeholder="Rubro (Ej: Combustible)" oninput="marcarCambio()">
+    <input class="f-input" type="number" placeholder="%" min="0" max="100" oninput="marcarCambio()">
+    <button class="del-btn" onclick="delRow(this)">✕</button>
+  </div>`,
+  plan: ()=>`<div class="dyn-row plan">
+    <select class="f-select" oninput="marcarCambio()">
+      <option>Previsto</option><option>Contingencia</option><option>En curso</option>
+    </select>
+    <input class="f-input" placeholder="Descripción del trabajo previsto" oninput="marcarCambio()">
+    <button class="del-btn" onclick="delRow(this)">✕</button>
+  </div>`,
+  flota: ()=>`<div class="dyn-row flota">
+    <input class="f-input" placeholder="Unidad (Ej: Motoniveladora N°1)" oninput="marcarCambio()">
+    <select class="f-select" oninput="marcarCambio()">
+      <option>Municipal</option><option>Consorcio</option><option>Alquilado</option>
+    </select>
+    <input class="f-input" placeholder="Organismo / Entidad" oninput="marcarCambio()">
+    <input class="f-input" placeholder="Hs uso (Ej: 1.240 hs)" oninput="marcarCambio()">
+    <select class="f-select" oninput="marcarCambio()">
+      <option>Operativa</option><option>Con Observación</option><option>Fuera de Servicio</option>
+    </select>
+    <button class="del-btn" onclick="delRow(this)">✕</button>
+  </div>`,
+  inventario: ()=>`<div class="dyn-row inventario">
+    <input class="f-input" placeholder="Indicador (Ej: Extensión total aprox.)" oninput="marcarCambio()">
+    <input class="f-input" placeholder="Valor (Ej: ~1.850 km)" oninput="marcarCambio()">
+    <select class="f-select" oninput="marcarCambio()">
+      <option value="">No</option><option value="1">Sí — En elaboración</option>
+    </select>
+    <button class="del-btn" onclick="delRow(this)">✕</button>
+  </div>`,
+  zonas: ()=>`<div class="dyn-row zonas">
+    <input class="f-input" placeholder="Zona (Ej: Cuartel I)" oninput="marcarCambio()">
+    <input class="f-input" type="number" placeholder="Km total" oninput="marcarCambio()">
+    <input class="f-input" type="number" placeholder="Km Mapillary" oninput="marcarCambio()">
+    <button class="del-btn" onclick="delRow(this)">✕</button>
+  </div>`,
+  reclamos: ()=>{
+    const n=Date.now()%10000;
+    return`<div class="dyn-row reclamos">
+    <input class="f-input" value="#${n}" oninput="marcarCambio()">
+    <input class="f-input" type="date" value="${new Date().toISOString().split('T')[0]}" oninput="marcarCambio()">
+    <input class="f-input" placeholder="Lugar" oninput="marcarCambio()">
+    <input class="f-input" placeholder="Descripción del reclamo" oninput="marcarCambio()">
+    <select class="f-select" oninput="marcarCambio()">
+      <option>Pendiente</option><option>En proceso</option><option>Resuelto</option>
+    </select>
+    <button class="del-btn" onclick="delRow(this)">✕</button>
+  </div>`;
+  }
+};
+
+function addRow(tipo){
+  document.getElementById(tipo+'Rows').insertAdjacentHTML('beforeend',templates[tipo]());
+  marcarCambio();
+}
+function delRow(btn){ btn.closest('.dyn-row').remove(); marcarCambio(); }
+
+// ══ EXPORTAR JSON (para copiar al Sheets)
+function exportarJSON(){
+  const datos = recolectarDatos();
+  const json = JSON.stringify(datos, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'TVT_datos.json'; a.click();
+  URL.revokeObjectURL(url);
+  marcarGuardado();
+}
+
+function recolectarDatos(){
+  const getRows = (id, campos) => {
+    return Array.from(document.querySelectorAll('#'+id+' .dyn-row')).map(row=>{
+      const inputs = Array.from(row.querySelectorAll('input,select'));
+      const obj={};
+      campos.forEach((f,i)=>{ obj[f]=inputs[i]?inputs[i].value:''; });
+      return obj;
+    });
+  };
+  return {
+    Config:{
+      SheetId:document.getElementById('cfgSheetId').value,
+      LinkInforme:document.getElementById('cfgInforme').value,
+      LinkReclamo:document.getElementById('cfgReclamo').value,
+      FechaFlota:document.getElementById('cfgFechaFlota').value
+    },
+    Resumen:{
+      Periodo:document.getElementById('resPeriodo').value,
+      Recaudado:document.getElementById('resRecaudado').value,
+      Ejecutado:document.getElementById('resEjecutado').value,
+      Ejecucion:document.getElementById('resEjecucion').value,
+      KmIntervenidos:document.getElementById('resKm').value
+    },
+    Trabajos:getRows('trabajosRows',['Tipo','Ubicacion','Fecha','Km']),
+    Gastos:getRows('gastosRows',['Rubro','Porcentaje']),
+    Plan:getRows('planRows',['Estado','Descripcion']),
+    Flota:getRows('flotaRows',['Unidad','Origen','Organismo','HorasUso','Estado']),
+    Inventario:getRows('inventarioRows',['Indicador','Valor','EnElaboracion']),
+    Zonas:getRows('zonasRows',['Zona','KmTotal','KmMapillary']),
+    Indicadores:{
+      Periodo:document.getElementById('indPeriodo').value,
+      CostoKm:document.getElementById('indCostoKm').value,
+      Ejecucion:document.getElementById('indEjecucion').value,
+      Disponibilidad:document.getElementById('indDisponib').value,
+      KmTotal:document.getElementById('indKmTotal').value
+    },
+    Reclamos:getRows('reclamosRows',['Ticket','Fecha','Lugar','Reclamo','Estado'])
+  };
+}
+
+function abrirSheet(){
+  const id = document.getElementById('cfgSheetId').value.trim();
+  if(!id){ alert('Primero ingresá el ID del Google Sheet en Configuración General.'); return; }
+  window.open(`https://docs.google.com/spreadsheets/d/${id}/edit`,'_blank');
+}
+
+// ══ DATOS GUARDADOS LOCALMENTE (localStorage del admin)
+function cargarDatosGuardados(){
+  try {
+    const saved = sessionStorage.getItem('tvt_admin_data');
+    if(!saved) { cargarEjemplo(); return; }
+    const d = JSON.parse(saved);
+    if(d.Config){
+      document.getElementById('cfgSheetId').value = d.Config.SheetId||'';
+      document.getElementById('cfgInforme').value  = d.Config.LinkInforme||'';
+      document.getElementById('cfgReclamo').value  = d.Config.LinkReclamo||'';
+      document.getElementById('cfgFechaFlota').value = d.Config.FechaFlota||'';
+    }
+    if(d.Resumen){
+      document.getElementById('resPeriodo').value   = d.Resumen.Periodo||'';
+      document.getElementById('resRecaudado').value = d.Resumen.Recaudado||'';
+      document.getElementById('resEjecutado').value = d.Resumen.Ejecutado||'';
+      document.getElementById('resEjecucion').value = d.Resumen.Ejecucion||'';
+      document.getElementById('resKm').value        = d.Resumen.KmIntervenidos||'';
+    }
+    if(d.Indicadores){
+      document.getElementById('indPeriodo').value  = d.Indicadores.Periodo||'';
+      document.getElementById('indCostoKm').value  = d.Indicadores.CostoKm||'';
+      document.getElementById('indEjecucion').value= d.Indicadores.Ejecucion||'';
+      document.getElementById('indDisponib').value = d.Indicadores.Disponibilidad||'';
+      document.getElementById('indKmTotal').value  = d.Indicadores.KmTotal||'';
+    }
+    const cargarDynRows = (id, campos, rows) => {
+      const cont = document.getElementById(id+'Rows');
+      if(!rows||!rows.length) return;
+      rows.forEach(r=>{
+        cont.insertAdjacentHTML('beforeend',templates[id.replace('Rows','')]());
+        const row=cont.lastElementChild;
+        const inputs=Array.from(row.querySelectorAll('input,select'));
+        campos.forEach((f,i)=>{if(inputs[i])inputs[i].value=r[f]||'';});
+      });
+    };
+    if(d.Trabajos)  cargarDynRows('trabajosRows', ['Tipo','Ubicacion','Fecha','Km'], d.Trabajos);
+    if(d.Gastos)    cargarDynRows('gastosRows', ['Rubro','Porcentaje'], d.Gastos);
+    if(d.Plan)      cargarDynRows('planRows', ['Estado','Descripcion'], d.Plan);
+    if(d.Flota)     cargarDynRows('flotaRows', ['Unidad','Origen','Organismo','HorasUso','Estado'], d.Flota);
+    if(d.Inventario)cargarDynRows('inventarioRows', ['Indicador','Valor','EnElaboracion'], d.Inventario);
+    if(d.Zonas)     cargarDynRows('zonasRows', ['Zona','KmTotal','KmMapillary'], d.Zonas);
+    if(d.Reclamos)  cargarDynRows('reclamosRows', ['Ticket','Fecha','Lugar','Reclamo','Estado'], d.Reclamos);
+  } catch(e){ cargarEjemplo(); }
+}
+
+// Guardar en session cada vez que hay cambio
+document.addEventListener('input', ()=>{
+  sessionStorage.setItem('tvt_admin_data', JSON.stringify(recolectarDatos()));
+});
+
+function cargarEjemplo(){
+  document.getElementById('resPeriodo').value='Marzo 2026';
+  document.getElementById('resRecaudado').value='$120 M';
+  document.getElementById('resEjecutado').value='$95 M';
+  document.getElementById('resEjecucion').value='79%';
+  document.getElementById('resKm').value='48 km';
+  document.getElementById('indPeriodo').value='1° Trimestre 2026';
+  document.getElementById('indCostoKm').value='$1.979.167';
+  document.getElementById('indEjecucion').value='79%';
+  document.getElementById('indDisponib').value='60%';
+  document.getElementById('indKmTotal').value='48 km';
+  const ej={
+    trabajos:[['Mantenimiento','Zona Norte — Cuartel I','12/03/2026','8 km'],['Entoscado','Cuartel II — Acceso Sur','15/03/2026','12 km'],['Alteo','Camino Barroso — Km 12-18','22/03/2026','6 km']],
+    gastos:[['Combustible','35'],['Sueldos','30'],['Reparaciones maquinaria','20'],['Otros','15']],
+    plan:[['Previsto','Mantenimiento Cuartel III — Zona Este'],['Previsto','Entoscado Camino La Porteña']],
+    flota:[['Motoniveladora N°1','Municipal','Municipalidad Carlos Tejedor','1.240 hs','Operativa'],['Retroexcavadora','Consorcio','Consorcio Vial Tres Algarrobos','430 hs','Con Observación'],['Tractor Agrícola','Alquilado','Proveedor externo','—','Fuera de Servicio']],
+    inventario:[['Extensión total aprox.','~1.850 km',''],['Cuarteles identificados','8 cuarteles',''],['Tramos con intervención','38 tramos',''],['Pendientes de relevamiento','','1']],
+    zonas:[['Cuartel I','8','8'],['Cuartel II','12','0'],['Cuartel III','0','0'],['Cuartel IV','0','0'],['Cuartel V','16','16']],
+    reclamos:[['#1023','2026-03-18','Camino Barroso — Zona Sur','Camino en mal estado','Pendiente'],['#1024','2026-03-20','Cuartel III','Bache grande en acceso','En proceso'],['#1025','2026-03-22','Ruta 7 km 34','Cuneta tapada','Resuelto']]
+  };
+  Object.entries(ej).forEach(([tipo, rows])=>{
+    const cont=document.getElementById(tipo+'Rows');
+    rows.forEach(vals=>{
+      cont.insertAdjacentHTML('beforeend',templates[tipo]());
+      const row=cont.lastElementChild;
+      const inputs=Array.from(row.querySelectorAll('input,select'));
+      vals.forEach((v,i)=>{if(inputs[i])inputs[i].value=v;});
+    });
+  });
+}
+</script>
+</body>
+</html>
